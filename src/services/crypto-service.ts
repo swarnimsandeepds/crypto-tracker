@@ -31,6 +31,7 @@ export async function fetchAsset(id: string): Promise<AssetResponse> {
 
 export async function fetchAssetHistory(id: string, interval: string = "d1"): Promise<AssetHistoryResponse> {
   try {
+    // The CoinCap API accepts different intervals: m5, m15, m30, h1, h2, h6, h12, d1
     const response = await fetch(`${BASE_URL}/assets/${id}/history?interval=${interval}`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);

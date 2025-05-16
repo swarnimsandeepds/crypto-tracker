@@ -1,60 +1,30 @@
 
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchAsset, fetchAssetHistory } from '../services/crypto-service';
+import { Link } from 'react-router-dom';
 import { Asset, AssetHistory } from '../types/crypto-types';
 import { formatUSD, formatPercent, formatNumber, getChangeColorClass } from '../utils/formatting';
 import PriceChart from './PriceChart';
-import LoadingSpinner from './LoadingSpinner';
 import { ArrowLeft } from 'lucide-react';
 
-const AssetDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const [asset, setAsset] = useState<Asset | null>(null);
-  const [history, setHistory] = useState<AssetHistory[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+interface AssetDetailProps {
+  asset: Asset;
+  history: AssetHistory[];
+  interval: string;
+  onIntervalChange: (interval: string) => void;
+}
 
-  useEffect(() => {
-    const loadAssetData = async () => {
-      if (!id) return;
-      
-      setLoading(true);
-      try {
-        // Load asset details and history in parallel
-        const [assetResponse, historyResponse] = await Promise.all([
-          fetchAsset(id),
-          fetchAssetHistory(id, 'd1') // Daily interval
-        ]);
-        
-        setAsset(assetResponse.data);
-        setHistory(historyResponse.data);
-      } catch (err) {
-        setError("Failed to load asset data. Please try again later.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadAssetData();
-  }, [id]);
-  
-  if (loading) return <LoadingSpinner />;
-  
-  if (error || !asset) {
-    return (
-      <div className="neo-container p-6 max-w-2xl mx-auto my-8">
-        <h2 className="text-2xl font-bold mb-4">Error</h2>
-        <p>{error || "Asset not found"}</p>
-        <Link to="/" className="neo-button inline-block mt-4">
-          <ArrowLeft className="inline-block mr-2" />
-          Back to Assets
-        </Link>
-      </div>
-    );
-  }
-  
+const intervalOptions = [
+  { value: 'm5', label: '5 Minutes' },
+  { value: 'm15', label: '15 Minutes' },
+  { value: 'm30', label: '30 Minutes' },
+  { value: 'h1', label: '1 Hour' },
+  { value: 'h2', label: '2 Hours' },
+  { value: 'h6', label: '6 Hours' },
+  { value: 'h12', label: '12 Hours' },
+  { value: 'd1', label: '1 Day' },
+  { value: 'w1', label: '1 Week' }
+];
+
+const AssetDetail = ({ asset, history, interval, onIntervalChange }: AssetDetailProps) => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-8">
@@ -109,7 +79,24 @@ const AssetDetail = () => {
         
         {history.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Price History (30 Days)</h2>
+            <div className="flex flex-wrap justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Price History</h2>
+              
+              <div className="neo-container p-2 mt-4 sm:mt-0">
+                <select 
+                  value={interval}
+                  onChange={(e) => onIntervalChange(e.target.value)}
+                  className="neo-select bg-white px-4 py-2 border-4 border-black font-bold"
+                >
+                  {intervalOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
             <PriceChart data={history} />
           </div>
         )}
