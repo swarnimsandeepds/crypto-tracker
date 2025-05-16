@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Neo-brutalist colors
+				neobrutalism: {
+					black: '#000000',
+					white: '#FFFFFF',
+					gray: '#222222',
+					accent: '#FF3300',
+					yellow: '#FFCC00',
 				}
 			},
 			borderRadius: {
