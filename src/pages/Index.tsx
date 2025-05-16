@@ -4,28 +4,44 @@ import { fetchAssets } from '../services/crypto-service';
 import AssetList from '../components/AssetList';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Asset } from '../types/crypto-types';
+import { toast } from '@/components/ui/sonner';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Index = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
 
   useEffect(() => {
     const loadAssets = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetchAssets();
         setAssets(response.data);
+        
+        if (retryCount > 0) {
+          toast.success("Data loaded successfully!");
+        }
       } catch (err) {
-        setError("Failed to load cryptocurrency data. Please try again later.");
+        setError("Failed to load cryptocurrency data. Please check your internet connection and try again.");
         console.error(err);
+        toast.error("Failed to load data", {
+          description: "Check your internet connection and try again"
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadAssets();
-  }, []);
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -39,9 +55,17 @@ const Index = () => {
         <LoadingSpinner />
       ) : error ? (
         <div className="neo-container p-6">
-          <h2 className="text-2xl font-bold mb-4">Error</h2>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="neo-button mt-4">
+          <Alert variant="destructive" className="mb-4 border-4 border-black">
+            <AlertCircle className="h-6 w-6" />
+            <AlertTitle className="text-xl font-bold">Error Loading Data</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          
+          <button 
+            onClick={handleRetry} 
+            className="neo-button mt-4 flex items-center gap-2"
+          >
+            <RefreshCw className="h-5 w-5" />
             Try Again
           </button>
         </div>
